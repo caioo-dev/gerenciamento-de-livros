@@ -1,10 +1,13 @@
 package com.caioandrade.gerenciamento_de_livros.controller;
 
+import com.caioandrade.gerenciamento_de_livros.controller.dtos.CreateLivroDTO;
 import com.caioandrade.gerenciamento_de_livros.infrastructure.entities.LivroEntity;
 import com.caioandrade.gerenciamento_de_livros.service.LivroService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,8 +22,10 @@ public class LivroController {
     }
 
     @PostMapping
-    public LivroEntity novoLivro(@RequestBody LivroEntity livro){
-        return livroService.novoLivro(livro);
+    public ResponseEntity<LivroEntity> novoLivro(@RequestBody CreateLivroDTO createLivroDTO) {
+        var livroId = livroService.novoLivro(createLivroDTO);
+        return ResponseEntity.created(URI.create("/livro/" + livroId.toString())).build();
+
     }
 
     @GetMapping
@@ -29,8 +34,12 @@ public class LivroController {
     }
 
     @GetMapping("{id}")
-    public LivroEntity buscarLivroPorId(@PathVariable Long id){
-        return livroService.buscarLivroPorId(id);
+    public ResponseEntity<LivroEntity> buscarLivroPorId(@PathVariable Long id){
+        var livro = livroService.buscarLivroPorId(id);
+        if (livro.isPresent()) {
+            return ResponseEntity.ok(livro.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("{id}")
